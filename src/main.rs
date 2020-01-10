@@ -14,5 +14,6 @@ fn main() {
         }
     }
     //println!("{}", chain);
+    //chain.print_frase_start();
     println!("Generated text:\n {}", chain.generate());
 }

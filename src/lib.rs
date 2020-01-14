@@ -21,15 +21,7 @@ impl Chain {
     Chain { map, frase_start, order }
   }
 
-  pub fn feed_file(&mut self, filename: String) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(filename)?;
-    contents.lines()
-      .filter(|line| !line.is_empty())
-      .for_each(|line| self.feed(line.split_whitespace().map(String::from).collect()));
-    Ok(())
-  }
-
-  fn feed(&mut self, words: Vec<String>) {
+  pub fn feed(&mut self, words: Vec<String>) {
     let mut len = words.len();
     if len < self.order { return; }
     len -= self.order;
@@ -51,6 +43,23 @@ impl Chain {
         }
       }
     }
+  }
+
+  pub fn feed_file(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(filename)?;
+    contents.lines()
+      .filter(|line| !line.is_empty())
+      .for_each(|line| self.feed(line.split_whitespace().map(String::from).collect()));
+    Ok(())
+  }
+
+  pub fn feed_directory(&mut self, path: &str) -> Result<(), Box<dyn Error>> {
+    let paths = fs::read_dir(path).unwrap();
+    for path in paths {
+        let filename = path.unwrap().path().display().to_string();
+        self.feed_file(&filename)?;
+    }
+    Ok(())
   }
 
   pub fn generate(&self) -> String {
@@ -151,9 +160,9 @@ mod tests {
   #[test]
   fn generate() {
     let mut chain = Chain::new(2);
-    chain.feed("I love cats".split_whitespace().map(String::from).collect());
-    chain.feed("I hate cats".split_whitespace().map(String::from).collect());
+    chain.feed("I love dogs".split_whitespace().map(String::from).collect());
+    chain.feed("I hate dogs".split_whitespace().map(String::from).collect());
 
-    assert!(vec!["I love cats", "cats", "I hate cats"].contains(&&chain.generate()[..]));
+    assert!(vec!["I love dogs", "I hate dogs"].contains(&&chain.generate()[..]));
   }
 }

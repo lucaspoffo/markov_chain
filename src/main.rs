@@ -13,8 +13,7 @@ fn main() {
             process::exit(1);
         }
     }
-    //println!("{}", chain);
-    //chain.print_frase_start();
+
     println!("Generated text:\n");
     for i in 0..101 {
         println!("{}) {}", i, chain.generate());

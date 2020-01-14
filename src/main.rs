@@ -3,7 +3,7 @@ use std::process;
 use std::fs;
 
 fn main() {
-    let mut chain = Chain::new();
+    let mut chain = Chain::new(2);
     
     let paths = fs::read_dir("./sample").unwrap();
     for path in paths {
@@ -15,5 +15,8 @@ fn main() {
     }
     //println!("{}", chain);
     //chain.print_frase_start();
-    println!("Generated text:\n {}", chain.generate());
+    println!("Generated text:\n");
+    for i in 0..101 {
+        println!("{}) {}", i, chain.generate());
+    } 
 }

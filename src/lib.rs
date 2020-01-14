@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::fs;
 use std::hash::Hash;
-
-
 use std::error::Error;
 use std::fmt;
+use std::fs;
 
 use rand::{Rng, thread_rng};
 
@@ -16,20 +14,18 @@ pub struct Chain {
 }
 
 impl Chain {
-  pub fn new() -> Chain {
+  pub fn new(order: usize) -> Chain {
+    assert!(order > 0);
     let map: HashMap<Vec<String>, HashMap<String, usize>> = HashMap::new();
     let frase_start: HashMap<Vec<String>, usize> = HashMap::new();
-    let order = 2;
     Chain { map, frase_start, order }
   }
 
   pub fn feed_file(&mut self, filename: String) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(filename)?;
-    for line in contents.lines() {
-      if !line.is_empty() {
-        self.feed(line.split_whitespace().map(String::from).collect());
-      }
-    }
+    contents.lines()
+      .filter(|line| !line.is_empty())
+      .for_each(|line| self.feed(line.split_whitespace().map(String::from).collect()));
     Ok(())
   }
 
@@ -64,7 +60,7 @@ impl Chain {
    
     let mut next_word_chain = &initial_words[..];
     result.append(&mut next_word_chain.clone().to_vec());
-    while self.map.contains_key(next_word_chain) && count < 23 {
+    while self.map.contains_key(next_word_chain) && count < 1000 { 
       match self.map.get(next_word_chain) {
         Some(word_map) => {
           result.push(word_map.next().clone());
@@ -75,8 +71,7 @@ impl Chain {
       }
       count += 1;
     }
-    
-    return result.join(" ");
+    return fix_ponctuation(result.join(" "));
   }
 
   pub fn print_frase_start(&self) {
@@ -84,6 +79,10 @@ impl Chain {
       println!("{:?}: {}", words, count);
     }
   }
+}
+
+fn fix_ponctuation(s: String) -> String {
+  s.replace(" .", ".").replace(" !", "!").replace(" ?", "?").replace(" ,", ",")
 }
 
 trait States<T> {
@@ -137,7 +136,7 @@ mod tests {
 
   #[test]
   fn feed() {
-    let mut chain = Chain::new();
+    let mut chain = Chain::new(2);
     chain.feed("I love cats".split_whitespace().map(String::from).collect());
 
     let mut hash = HashMap::new();
@@ -151,7 +150,7 @@ mod tests {
 
   #[test]
   fn generate() {
-    let mut chain = Chain::new();
+    let mut chain = Chain::new(2);
     chain.feed("I love cats".split_whitespace().map(String::from).collect());
     chain.feed("I hate cats".split_whitespace().map(String::from).collect());
 
